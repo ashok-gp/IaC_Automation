@@ -1,6 +1,5 @@
 ---
 name: Create Sample webapp
-
 on:
   workflow_dispatch:
   pull_request:
@@ -9,36 +8,29 @@ on:
   push:
     branches:
       - main
-
 jobs:
   sampleapp:
     runs-on: ubuntu-latest
-
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: us-east-1
-
     steps:
         - name: checkout repo
-          uses: actions/checkout@v4
-          
+          uses: actions/checkout@v4  
         - name: Get terraform
           run: |
             wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
             echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
             sudo apt update && sudo apt install terraform
-            terraform -version
-            
+            terraform -version       
         - name: Intialize
           run: |
             terraform init
-
         - name: Terraform plan
-          if: github.event_name == 'push'
+          if: github.event_name == 'pull_request'
           run: |   
             terraform plan
-
         - name: Terraform apply
           if: github.event_name == 'push'
           run: |
